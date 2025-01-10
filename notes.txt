@@ -1,0 +1,15 @@
+Late Arriving Facts Data
+1010,payment_api,2024-01-09 23:55:00,149.8,success,2024-01-10 00:15:00,2024-01-10 00:15:00
+1011,inventory_api,2024-01-09 23:50:00,90.2,success,2024-01-10 00:15:00,2024-01-10 00:15:00
+1012,user_api,2024-01-09 23:45:00,219.7,success,2024-01-10 00:15:00,2024-01-10 00:15:00
+
+
+
+Command to change variable for backfill
+dbt build --vars '{"lookback_days": 2}'
+
+
+
+Reload target commands:
+dbt build --select api_metrics --full-refresh
+dbt build --select api_metrics_backfill --full-refresh
