@@ -26,6 +26,7 @@ clean-targets:         # directories to be removed by `dbt clean`
 
 vars:
   lookback_days: 0
+  backfill_date: null
 
 
 # Configuring models
