@@ -1,0 +1,61 @@
+# models/semantic/semantic_models.yml
+semantic_models:
+  - name: opportunities
+    model: ref('stg_opportunities')
+    defaults:
+      agg_time_dimension: created_date  # Set default time dimension
+    entities:
+      - name: opportunity
+        type: primary
+        expr: opportunity_id
+    measures:
+      - name: total_amount
+        expr: amount
+        agg: sum
+        agg_time_dimension: created_date  # Explicitly set for each measure
+      - name: avg_amount
+        expr: amount
+        agg: average
+        agg_time_dimension: created_date  # Explicitly set for each measure
+    dimensions:
+      - name: created_date
+        type: time
+        expr: created_date
+        type_params:
+          time_granularity: day
+
+  - name: opportunity_hierarchy_created
+    model: ref('opportunity_hierarchy_created_crosswalk')
+    entities:
+      - name: opportunity_hierarchy_created
+        type: primary
+        expr: created_date_user_id_concat
+      - name: opportunity
+        type: foreign
+        expr: opportunity_id
+    dimensions:
+      - name: reporting_segment_at_creation
+        type: categorical
+        expr: reporting_segment
+
+  - name: opportunity_hierarchy_submitted
+    model: ref('opportunity_hierarchy_submitted_crosswalk')
+    entities:
+      - name: opportunity_hierarchy_submitted
+        type: primary
+        expr: submitted_date_user_id_concat
+      - name: opportunity
+        type: foreign
+        expr: opportunity_id
+    dimensions:
+      - name: reporting_segment_at_submission
+        type: categorical
+        expr: reporting_segment
+
+metrics:
+  - name: average_opportunity_amount
+    type: simple
+    label: Average Opportunity Amount
+    description: Average amount of all opportunities
+    type_params:
+      measure: avg_amount
