@@ -4,7 +4,7 @@ semantic_models:
     description: "Sales hierarchy data representing organizational structure and reporting relationships"
     model: ref('stg_sf_sales_hierarchy')
     defaults:
-      agg_time_dimension: effective_date  # Default time dimension for the model
+      agg_time_dimension: effective_date
     
     entities:
       - name: hierarchy_id
@@ -15,17 +15,12 @@ semantic_models:
       - name: parent_hierarchy_id
         type: foreign
         expr: parent_hierarchy_id
-        description: "Reference to parent hierarchy record"
+        description: "Reference to parent hierarchy record for self-referential joins"
 
       - name: employee_id
         type: unique
         expr: employee_id
         description: "Unique identifier for each employee"
-
-      - name: opportunity
-        type: foreign
-        expr: employee_id  # This will join to the opportunity owner_id
-        description: "Link to opportunities owned by this employee"
 
     dimensions:
       - name: effective_date
@@ -45,7 +40,7 @@ semantic_models:
       - name: level
         type: categorical
         expr: hierarchy_level
-        description: "Level in the organization hierarchy (e.g., Director, Manager, IC)"
+        description: "Level in the organization hierarchy"
 
       - name: department
         type: categorical
@@ -58,22 +53,16 @@ semantic_models:
         description: "Geographic region"
 
     measures:
-      - name: employee_count
-        expr: employee_id
-        agg: count_distinct
-        description: "Count of unique employees in the hierarchy"
-        agg_time_dimension: effective_date
-
       - name: active_positions
         expr: hierarchy_id
         agg: count_distinct
-        description: "Count of active positions on a given date"
+        description: "Count of active positions"
         agg_time_dimension: effective_date
 
       - name: avg_team_size
-        expr: "CASE WHEN is_manager THEN team_size ELSE NULL END"
+        expr: team_size
         agg: average
-        description: "Average team size for managers"
+        description: "Average team size"
         agg_time_dimension: effective_date
 
   # Opportunity Model
@@ -89,10 +78,25 @@ semantic_models:
         expr: opportunity_id
         description: "Unique identifier for each opportunity"
       
-      - name: owner_id
+      - name: sales_hierarchy_created
         type: foreign
-        expr: owner_id
-        description: "ID of the employee who owns the opportunity"
+        expr: created_date_user_id_concat
+        description: "Link to hierarchy based on created date"
+
+      - name: sales_hierarchy_closed
+        type: foreign
+        expr: close_date_user_id_concat
+        description: "Link to hierarchy based on close date"
+
+      - name: sales_hierarchy_lost
+        type: foreign
+        expr: lost_date_user_id_concat
+        description: "Link to hierarchy based on lost date"
+
+      - name: sales_hierarchy_submitted
+        type: foreign
+        expr: submitted_date_user_id_concat
+        description: "Link to hierarchy based on submitted date"
 
     dimensions:
       - name: created_date
@@ -114,6 +118,16 @@ semantic_models:
         expr: stage_name
         description: "Current stage of the opportunity"
 
+      - name: is_won
+        type: categorical
+        expr: is_won
+        description: "Whether the opportunity was won"
+
+      - name: is_closed
+        type: categorical
+        expr: is_closed
+        description: "Whether the opportunity is closed"
+
     measures:
       - name: total_amount
         expr: amount
@@ -126,3 +140,44 @@ semantic_models:
         agg: count_distinct
         description: "Count of opportunities"
         agg_time_dimension: created_date
+
+      - name: win_rate
+        expr: "CASE WHEN is_won THEN 1 ELSE 0 END"
+        agg: average
+        description: "Percentage of opportunities won"
+        agg_time_dimension: created_date
+
+  # Hierarchy Date Bridge Model
+  - name: hierarchy_date_bridge
+    description: "Bridge table for time-based hierarchy relationships"
+    model: ref('hierarchy_date_bridge')
+    defaults:
+      agg_time_dimension: date_id
+    
+    entities:
+      - name: hierarchy_date_key
+        type: primary
+        expr: hierarchy_date_key
+        description: "Composite key of hierarchy_id and date"
+      
+      - name: hierarchy_id
+        type: foreign
+        expr: hierarchy_id
+        description: "Reference to main hierarchy record"
+
+    dimensions:
+      - name: date_id
+        type: time
+        expr: date_id
+        description: "Date dimension"
+        type_params:
+          time_granularity: day
+
+
+metrics:
+  - name: opp_amount
+    description: "Total opportunity amount grouped by sales hierarchy"
+    type: simple
+    label: "Opportunity Amount"
+    type_params:
+      measure: total_amount
