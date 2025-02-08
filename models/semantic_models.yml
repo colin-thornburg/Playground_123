@@ -1,93 +1,114 @@
 semantic_models:
-  # Primary Sales Hierarchy Model
-  - name: sales_hierarchy
-    description: "Sales hierarchy data representing organizational structure and reporting relationships"
-    model: ref('stg_sf_sales_hierarchy')
-    defaults:
-      agg_time_dimension: dbt_insert_timestamp_utc  # Changed from effective_date
-    
-    entities:
-      - name: hierarchy_id
-        type: primary
-        expr: hierarchy_id
-        description: "Unique identifier for each hierarchy record"
-      
-      - name: employee_id
-        type: unique
-        expr: employee_id
-        description: "Unique identifier for each employee"
-
-    dimensions:
-      - name: dbt_insert_timestamp_utc
-        type: time
-        expr: dbt_insert_timestamp_utc
-        description: "Timestamp when the record was inserted"
-        type_params:
-          time_granularity: day
-
-      - name: region_name
-        type: categorical
-        expr: region_name
-        description: "Geographic region"
-
-      - name: department_name
-        type: categorical
-        expr: department_name
-        description: "Department name"
-
-      - name: hierarchy_level
-        type: categorical
-        expr: hierarchy_level
-        description: "Level in the organization hierarchy"
-
-  # Opportunity Model
   - name: opportunity
-    description: "Sales opportunities data"
-    model: ref('stg_sf_opportunity')
+    model: ref('stg_opportunity')
+    description: "Fact table for Opportunities"
+
     defaults:
       agg_time_dimension: created_date
-    
+
     entities:
-      - name: opportunity_id
+      - name: opportunity
         type: primary
         expr: opportunity_id
-        description: "Unique identifier for each opportunity"
-      
-      - name: owner_id
+
+      # "Created" role crosswalk
+      - name: sales_hierarchy_cw_created
         type: foreign
-        expr: owner_id  # This joins to sales_hierarchy.employee_id
-        description: "ID of the employee who owns the opportunity"
+        expr: created_date_user_id_concat
+
+      # "Submitted" role crosswalk
+      - name: sales_hierarchy_cw_submitted
+        type: foreign
+        expr: submitted_date_user_id_concat
 
     dimensions:
       - name: created_date
         type: time
         expr: created_date
-        description: "Date when the opportunity was created"
+        type_params:
+          time_granularity: day
+      - name: submitted_date
+        type: time
+        expr: submitted_date
         type_params:
           time_granularity: day
 
-      - name: stage_name
-        type: categorical
-        expr: stage_name
-        description: "Current stage of the opportunity"
-
     measures:
       - name: total_amount
-        expr: amount
+        description: "Sum of dollars in the opportunity"
         agg: sum
-        description: "Total opportunity amount"
-        agg_time_dimension: created_date
+        expr: amount
 
-      - name: opportunity_count
-        expr: opportunity_id
-        agg: count_distinct
-        description: "Count of opportunities"
-        agg_time_dimension: created_date
+  - name: sales_hierarchy_cw_created
+    model: ref('stg_sh_sl_crosswalk')
+    description: "Crosswalk for user/date combos (Created Date) => Hierarchy ID"
+    entities:
+      - name: sales_hierarchy_cw_created
+        type: primary
+        expr: cx_walk_key
+
+      - name: sales_hierarchy
+        type: foreign
+        expr: hierarchy_id
+
+    dimensions:
+      - name: hierarchy_id
+        type: categorical
+      - name: user_id
+        type: categorical
+      - name: date
+        type: time
+        type_params:
+          time_granularity: day
+
+  - name: sales_hierarchy_cw_submitted
+    model: ref('stg_sh_sl_crosswalk')
+    description: "Crosswalk for user/date combos (Submitted Date) => Hierarchy ID"
+    entities:
+      - name: sales_hierarchy_cw_submitted
+        type: primary
+        expr: cx_walk_key
+
+      - name: sales_hierarchy
+        type: foreign
+        expr: hierarchy_id
+
+    dimensions:
+      - name: hierarchy_id
+        type: categorical
+      - name: user_id
+        type: categorical
+      - name: date
+        type: time
+        type_params:
+          time_granularity: day
+
+  - name: sales_hierarchy
+    model: ref('stg_sales_hierarchy')
+    description: "Dimension table describing each Hierarchy ID"
+    entities:
+      - name: sales_hierarchy
+        type: primary
+        expr: hierarchy_id
+
+    dimensions:
+      - name: region_name
+        type: categorical
+      - name: start_date
+        type: time
+        type_params:
+          time_granularity: day
+      - name: end_date
+        type: time
+        type_params:
+          time_granularity: day
+
 
 metrics:
-  - name: total_opportunity_amount
-    description: "Total opportunity amount that can be sliced by sales hierarchy dimensions"
-    type: simple
-    label: "Total Opportunity Amount"
-    type_params:
-      measure: total_amount
+  - name: total_amount
+    description: the metric description # Optional
+    type: simple # Required
+    label: total_amount # Required
+    type_params: # Required
+      measure: 
+        name: total_amount # Required
