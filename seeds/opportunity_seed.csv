@@ -1,0 +1,4 @@
+opportunity_id,user_id,created_date,submitted_date,amount
+1,A123,2023-01-01,2023-01-05,100
+2,B456,2023-02-01,2023-02-03,200
+3,A123,2023-03-01,2023-03-07,300
