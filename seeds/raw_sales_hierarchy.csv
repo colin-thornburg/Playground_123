@@ -1,4 +1,4 @@
-hierarchy_id,sfdc_user_id,reporting_segment,start_date,end_date
-HIER-1,USER-1,SEGMENT-A,2024-01-01,2024-01-31
-HIER-2,USER-1,SEGMENT-B,2024-02-01,2024-12-31
-HIER-3,USER-2,SEGMENT-C,2024-01-01,2024-12-31
+hierarchy_id,sfdc_user_id,reporting_segment,region_name,area_name,start_date,end_date
+HIER-1,USER-1,SEGMENT-A,REGION-1,AREA-1,2024-01-01,2024-01-31
+HIER-2,USER-1,SEGMENT-B,REGION-2,AREA-2,2024-02-01,2024-12-31
+HIER-3,USER-2,SEGMENT-C,REGION-3,AREA-3,2024-01-01,2024-12-31

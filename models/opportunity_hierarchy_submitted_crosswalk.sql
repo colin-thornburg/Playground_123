@@ -5,7 +5,9 @@ WITH base AS (
         o.owner_id,
         o.submitted_date_user_id_concat,
         sh.hierarchy_id,
-        sh.reporting_segment
+        sh.reporting_segment,
+        sh.region_name,
+        sh.area_name
     FROM {{ ref('stg_opportunities') }} o
     LEFT JOIN {{ ref('stg_sales_hierarchy') }} sh
         ON o.owner_id = sh.sfdc_user_id
