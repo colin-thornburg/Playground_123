@@ -1,5 +1,0 @@
-transaction_id,employee_id,transaction_date,amount
-T001,E004,2024-02-15,10000
-T002,E004,2024-03-01,15000
-T003,E005,2024-02-20,12000
-T004,E005,2024-03-15,18000
