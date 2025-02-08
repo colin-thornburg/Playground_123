@@ -1,73 +1,128 @@
-# models/semantic/semantic_models.yml
 semantic_models:
-  - name: opportunities
-    model: ref('stg_opportunities')
+  # Primary Sales Hierarchy Model
+  - name: sales_hierarchy
+    description: "Sales hierarchy data representing organizational structure and reporting relationships"
+    model: ref('stg_sf_sales_hierarchy')
+    defaults:
+      agg_time_dimension: effective_date  # Default time dimension for the model
+    
+    entities:
+      - name: hierarchy_id
+        type: primary
+        expr: hierarchy_id
+        description: "Unique identifier for each hierarchy record"
+      
+      - name: parent_hierarchy_id
+        type: foreign
+        expr: parent_hierarchy_id
+        description: "Reference to parent hierarchy record"
+
+      - name: employee_id
+        type: unique
+        expr: employee_id
+        description: "Unique identifier for each employee"
+
+      - name: opportunity
+        type: foreign
+        expr: employee_id  # This will join to the opportunity owner_id
+        description: "Link to opportunities owned by this employee"
+
+    dimensions:
+      - name: effective_date
+        type: time
+        expr: effective_date
+        description: "Date when the hierarchy record becomes effective"
+        type_params:
+          time_granularity: day
+
+      - name: end_date
+        type: time
+        expr: end_date
+        description: "Date when the hierarchy record expires"
+        type_params:
+          time_granularity: day
+
+      - name: level
+        type: categorical
+        expr: hierarchy_level
+        description: "Level in the organization hierarchy (e.g., Director, Manager, IC)"
+
+      - name: department
+        type: categorical
+        expr: department_name
+        description: "Department name"
+
+      - name: region
+        type: categorical
+        expr: region_name
+        description: "Geographic region"
+
+    measures:
+      - name: employee_count
+        expr: employee_id
+        agg: count_distinct
+        description: "Count of unique employees in the hierarchy"
+        agg_time_dimension: effective_date
+
+      - name: active_positions
+        expr: hierarchy_id
+        agg: count_distinct
+        description: "Count of active positions on a given date"
+        agg_time_dimension: effective_date
+
+      - name: avg_team_size
+        expr: "CASE WHEN is_manager THEN team_size ELSE NULL END"
+        agg: average
+        description: "Average team size for managers"
+        agg_time_dimension: effective_date
+
+  # Opportunity Model
+  - name: opportunity
+    description: "Sales opportunities data"
+    model: ref('stg_sf_opportunity')
     defaults:
       agg_time_dimension: created_date
+    
     entities:
-      - name: opportunity
+      - name: opportunity_id
         type: primary
         expr: opportunity_id
-    measures:
-      - name: total_amount
-        expr: amount
-        agg: sum
-        agg_time_dimension: created_date
-      - name: avg_amount
-        expr: amount
-        agg: average
-        agg_time_dimension: created_date
+        description: "Unique identifier for each opportunity"
+      
+      - name: owner_id
+        type: foreign
+        expr: owner_id
+        description: "ID of the employee who owns the opportunity"
+
     dimensions:
       - name: created_date
         type: time
         expr: created_date
+        description: "Date when the opportunity was created"
         type_params:
           time_granularity: day
 
-  - name: opportunity_hierarchy_created
-    model: ref('opportunity_hierarchy_created_crosswalk')
-    entities:
-      - name: opportunity_hierarchy_created
-        type: primary
-        expr: created_date_user_id_concat
-      - name: opportunity
-        type: foreign
-        expr: opportunity_id
-    dimensions:
-      - name: reporting_segment_at_creation
-        type: categorical
-        expr: reporting_segment
-      - name: region_name_at_creation
-        type: categorical
-        expr: region_name
-      - name: area_name_at_creation
-        type: categorical
-        expr: area_name
+      - name: close_date
+        type: time
+        expr: close_date
+        description: "Date when the opportunity was closed"
+        type_params:
+          time_granularity: day
 
-  - name: opportunity_hierarchy_submitted
-    model: ref('opportunity_hierarchy_submitted_crosswalk')
-    entities:
-      - name: opportunity_hierarchy_submitted
-        type: primary
-        expr: submitted_date_user_id_concat
-      - name: opportunity
-        type: foreign
-        expr: opportunity_id
-    dimensions:
-      - name: reporting_segment_at_submission
+      - name: stage_name
         type: categorical
-        expr: reporting_segment
-      - name: region_name_at_submission
-        type: categorical
-        expr: region_name
-      - name: area_name_at_submission
-        type: categorical
-        expr: area_name
+        expr: stage_name
+        description: "Current stage of the opportunity"
 
-metrics:
-  - name: average_opportunity_amount
-    type: simple
-    label: Average Opportunity Amount
-    description: Average amount of all opportunities
-    type_params:
-      measure: avg_amount
+    measures:
+      - name: total_amount
+        expr: amount
+        agg: sum
+        description: "Total opportunity amount"
+        agg_time_dimension: created_date
+
+      - name: opportunity_count
+        expr: opportunity_id
+        agg: count_distinct
+        description: "Count of opportunities"
+        agg_time_dimension: created_date
