@@ -1,4 +1,8 @@
-hierarchy_id,sfdc_user_id,reporting_segment,region_name,area_name,start_date,end_date
-HIER-1,USER-1,SEGMENT-A,REGION-1,AREA-1,2024-01-01,2024-01-31
-HIER-2,USER-1,SEGMENT-B,REGION-2,AREA-2,2024-02-01,2024-12-31
-HIER-3,USER-2,SEGMENT-C,REGION-3,AREA-3,2024-01-01,2024-12-31
+employee_id,hierarchy_id,parent_hierarchy_id,hierarchy_level,department_name,region_name,effective_date,end_date,is_manager,team_size
+E001,H001,NULL,VP,Sales,North America,2024-01-01,2099-12-31,true,20
+E002,H002,H001,Director,Sales,North America,2024-01-01,2099-12-31,true,10
+E003,H003,H002,Manager,Sales,Northeast,2024-01-01,2099-12-31,true,5
+E004,H004,H003,IC,Sales,Northeast,2024-01-01,2099-12-31,false,0
+E005,H005,H003,IC,Sales,Northeast,2024-01-01,2099-12-31,false,0
+E006,H006,H002,Manager,Sales,Southeast,2024-01-01,2024-06-30,true,4
+E006,H007,H002,Manager,Sales,Southeast,2024-07-01,2099-12-31,true,5
