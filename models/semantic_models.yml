@@ -33,9 +33,16 @@ semantic_models:
       - name: opportunity
         type: foreign
         expr: opportunity_id
-      - name: sales_hierarchy
-        type: foreign
-        expr: hierarchy_id
+    dimensions:
+      - name: reporting_segment_at_creation
+        type: categorical
+        expr: reporting_segment
+      - name: region_name_at_creation
+        type: categorical
+        expr: region_name
+      - name: area_name_at_creation
+        type: categorical
+        expr: area_name
 
   - name: opportunity_hierarchy_submitted
     model: ref('opportunity_hierarchy_submitted_crosswalk')
@@ -46,26 +53,16 @@ semantic_models:
       - name: opportunity
         type: foreign
         expr: opportunity_id
-      - name: sales_hierarchy
-        type: foreign
-        expr: hierarchy_id
-
-  - name: sales_hierarchy
-    model: ref('stg_sales_hierarchy')
-    entities:
-      - name: sales_hierarchy
-        type: primary
-        expr: hierarchy_id
     dimensions:
-      - name: reporting_segment
+      - name: reporting_segment_at_submission
         type: categorical
         expr: reporting_segment
-      - name: area_name
-        type: categorical
-        expr: area_name
-      - name: region_name
+      - name: region_name_at_submission
         type: categorical
         expr: region_name
+      - name: area_name_at_submission
+        type: categorical
+        expr: area_name
 
 metrics:
   - name: average_opportunity_amount
