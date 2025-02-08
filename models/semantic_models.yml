@@ -4,7 +4,7 @@ semantic_models:
     description: "Sales hierarchy data representing organizational structure and reporting relationships"
     model: ref('stg_sf_sales_hierarchy')
     defaults:
-      agg_time_dimension: effective_date
+      agg_time_dimension: dbt_insert_timestamp_utc  # Changed from effective_date
     
     entities:
       - name: hierarchy_id
@@ -12,58 +12,33 @@ semantic_models:
         expr: hierarchy_id
         description: "Unique identifier for each hierarchy record"
       
-      - name: parent_hierarchy_id
-        type: foreign
-        expr: parent_hierarchy_id
-        description: "Reference to parent hierarchy record for self-referential joins"
-
       - name: employee_id
         type: unique
         expr: employee_id
         description: "Unique identifier for each employee"
 
     dimensions:
-      - name: effective_date
+      - name: dbt_insert_timestamp_utc
         type: time
-        expr: effective_date
-        description: "Date when the hierarchy record becomes effective"
+        expr: dbt_insert_timestamp_utc
+        description: "Timestamp when the record was inserted"
         type_params:
           time_granularity: day
 
-      - name: end_date
-        type: time
-        expr: end_date
-        description: "Date when the hierarchy record expires"
-        type_params:
-          time_granularity: day
-
-      - name: level
-        type: categorical
-        expr: hierarchy_level
-        description: "Level in the organization hierarchy"
-
-      - name: department
-        type: categorical
-        expr: department_name
-        description: "Department name"
-
-      - name: region
+      - name: region_name
         type: categorical
         expr: region_name
         description: "Geographic region"
 
-    measures:
-      - name: active_positions
-        expr: hierarchy_id
-        agg: count_distinct
-        description: "Count of active positions"
-        agg_time_dimension: effective_date
+      - name: department_name
+        type: categorical
+        expr: department_name
+        description: "Department name"
 
-      - name: avg_team_size
-        expr: team_size
-        agg: average
-        description: "Average team size"
-        agg_time_dimension: effective_date
+      - name: hierarchy_level
+        type: categorical
+        expr: hierarchy_level
+        description: "Level in the organization hierarchy"
 
   # Opportunity Model
   - name: opportunity
@@ -78,25 +53,10 @@ semantic_models:
         expr: opportunity_id
         description: "Unique identifier for each opportunity"
       
-      - name: sales_hierarchy_created
+      - name: owner_id
         type: foreign
-        expr: created_date_user_id_concat
-        description: "Link to hierarchy based on created date"
-
-      - name: sales_hierarchy_closed
-        type: foreign
-        expr: close_date_user_id_concat
-        description: "Link to hierarchy based on close date"
-
-      - name: sales_hierarchy_lost
-        type: foreign
-        expr: lost_date_user_id_concat
-        description: "Link to hierarchy based on lost date"
-
-      - name: sales_hierarchy_submitted
-        type: foreign
-        expr: submitted_date_user_id_concat
-        description: "Link to hierarchy based on submitted date"
+        expr: owner_id  # This joins to sales_hierarchy.employee_id
+        description: "ID of the employee who owns the opportunity"
 
     dimensions:
       - name: created_date
@@ -106,27 +66,10 @@ semantic_models:
         type_params:
           time_granularity: day
 
-      - name: close_date
-        type: time
-        expr: close_date
-        description: "Date when the opportunity was closed"
-        type_params:
-          time_granularity: day
-
       - name: stage_name
         type: categorical
         expr: stage_name
         description: "Current stage of the opportunity"
-
-      - name: is_won
-        type: categorical
-        expr: is_won
-        description: "Whether the opportunity was won"
-
-      - name: is_closed
-        type: categorical
-        expr: is_closed
-        description: "Whether the opportunity is closed"
 
     measures:
       - name: total_amount
@@ -141,43 +84,10 @@ semantic_models:
         description: "Count of opportunities"
         agg_time_dimension: created_date
 
-      - name: win_rate
-        expr: "CASE WHEN is_won THEN 1 ELSE 0 END"
-        agg: average
-        description: "Percentage of opportunities won"
-        agg_time_dimension: created_date
-
-  # Hierarchy Date Bridge Model
-  - name: hierarchy_date_bridge
-    description: "Bridge table for time-based hierarchy relationships"
-    model: ref('hierarchy_date_bridge')
-    defaults:
-      agg_time_dimension: date_id
-    
-    entities:
-      - name: hierarchy_date_key
-        type: primary
-        expr: hierarchy_date_key
-        description: "Composite key of hierarchy_id and date"
-      
-      - name: hierarchy_id
-        type: foreign
-        expr: hierarchy_id
-        description: "Reference to main hierarchy record"
-
-    dimensions:
-      - name: date_id
-        type: time
-        expr: date_id
-        description: "Date dimension"
-        type_params:
-          time_granularity: day
-
-
 metrics:
-  - name: opp_amount
-    description: "Total opportunity amount grouped by sales hierarchy"
+  - name: total_opportunity_amount
+    description: "Total opportunity amount that can be sliced by sales hierarchy dimensions"
     type: simple
-    label: "Opportunity Amount"
+    label: "Total Opportunity Amount"
     type_params:
       measure: total_amount
