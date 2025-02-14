@@ -1,4 +1,4 @@
-{% macro governance_check() %}
+{% macro model_naming_standards_check() %}
     {{ log('Validating object: ' ~ this.identifier, info=True) }}
     
     {# Staging models validation #}
