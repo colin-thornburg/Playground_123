@@ -25,7 +25,8 @@ clean-targets:         # directories to be removed by `dbt clean`
   - "dbt_packages"
 
 
-
+on-run-start:
+  - "{{validate_model_name(model)}}"
 
 # Configuring models
 # Full documentation: https://docs.getdbt.com/docs/configuring-models
@@ -41,6 +42,6 @@ models:
   my_new_project:
     staging:
       +materialized: view
-      +post-hook: "{{validate_model_name(model_to_validate)}}"
+      
     # Applies to all files under models/example/
 
