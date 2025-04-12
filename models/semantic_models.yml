@@ -7,9 +7,12 @@ semantic_models:
     dimensions:
       - name: transaction_date
         type: time
-        expr: transaction_date
+        expr: DATE(transaction_date)
         type_params:
           time_granularity: day
+      - name: transaction_date_formatted
+        type: categorical  # or string
+        expr: TO_CHAR(transaction_date, 'YYYY-MM-DD')  # Snowflake date formatting
     measures:
       - name: total_amount
         expr: amount
