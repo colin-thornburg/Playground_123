@@ -1,46 +1,9 @@
 semantic_models:
-  - name: opportunity
-    model: ref('stg_opportunity')
-    description: "Fact table for Opportunities"
-
-    defaults:
-      agg_time_dimension: created_date
-
-    entities:
-      - name: opportunity
-        type: primary
-        expr: opportunity_id
-
-      # "Created" role crosswalk
-      - name: sales_hierarchy_cw_created
-        type: foreign
-        expr: created_date_user_id_concat
-
-      # "Submitted" role crosswalk
-      - name: sales_hierarchy_cw_submitted
-        type: foreign
-        expr: submitted_date_user_id_concat
-
-    dimensions:
-      - name: created_date
-        type: time
-        expr: created_date
-        type_params:
-          time_granularity: day
-      - name: submitted_date
-        type: time
-        expr: submitted_date
-        type_params:
-          time_granularity: day
-
-    measures:
-      - name: total_amount
-        description: "Sum of dollars in the opportunity"
-        agg: sum
-        expr: amount
-
   - name: time_test
     model: ref('test_time_dimension')
+    defaults:
+      agg_time_dimension: transaction_date
+    primary_entity: id
     dimensions:
       - name: transaction_date
         type: time
@@ -52,76 +15,11 @@ semantic_models:
         expr: amount
         agg: sum
 
-  - name: sales_hierarchy_cw_created
-    model: ref('stg_sh_sl_crosswalk')
-    description: "Crosswalk for user/date combos (Created Date) => Hierarchy ID"
-    entities:
-      - name: sales_hierarchy_cw_created
-        type: primary
-        expr: cx_walk_key
-
-      - name: sales_hierarchy
-        type: foreign
-        expr: hierarchy_id
-
-    dimensions:
-      - name: hierarchy_id
-        type: categorical
-      - name: user_id
-        type: categorical
-      - name: date
-        type: time
-        type_params:
-          time_granularity: day
-
-  - name: sales_hierarchy_cw_submitted
-    model: ref('stg_sh_sl_crosswalk')
-    description: "Crosswalk for user/date combos (Submitted Date) => Hierarchy ID"
-    entities:
-      - name: sales_hierarchy_cw_submitted
-        type: primary
-        expr: cx_walk_key
-
-      - name: sales_hierarchy
-        type: foreign
-        expr: hierarchy_id
-
-    dimensions:
-      - name: hierarchy_id
-        type: categorical
-      - name: user_id
-        type: categorical
-      - name: date
-        type: time
-        type_params:
-          time_granularity: day
-
-  - name: sales_hierarchy
-    model: ref('stg_sales_hierarchy')
-    description: "Dimension table describing each Hierarchy ID"
-    entities:
-      - name: sales_hierarchy
-        type: primary
-        expr: hierarchy_id
-
-    dimensions:
-      - name: region_name
-        type: categorical
-      - name: start_date
-        type: time
-        type_params:
-          time_granularity: day
-      - name: end_date
-        type: time
-        type_params:
-          time_granularity: day
-
-
 metrics:
   - name: total_amount
-    description: the metric description # Optional
-    type: simple # Required
-    label: total_amount # Required
-    type_params: # Required
-      measure: 
-        name: total_amount # Required
+    type: simple
+    label: Total Amount
+    type_params:
+      measure:
+        name: total_amount
+    time_granularity: day
