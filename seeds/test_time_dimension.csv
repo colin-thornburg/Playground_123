@@ -1,0 +1,11 @@
+id,transaction_date,amount,customer_name
+1,2024-01-01,100.50,Alice Smith
+2,2024-01-15,75.25,Bob Johnson
+3,2024-02-01,200.00,Charlie Brown
+4,2024-02-14,150.75,Diana Prince
+5,2024-03-01,300.25,Edward Jones
+6,2024-03-15,125.00,Frank Miller
+7,2024-04-01,225.50,Grace Lee
+8,2024-04-15,175.75,Henry Ford
+9,2024-05-01,250.00,Iris West
+10,2024-05-15,400.25,Jack Black
