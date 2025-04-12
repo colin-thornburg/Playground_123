@@ -39,6 +39,19 @@ semantic_models:
         agg: sum
         expr: amount
 
+  - name: time_test
+    model: ref('test_time_dimension')
+    dimensions:
+      - name: transaction_date
+        type: time
+        expr: transaction_date
+        type_params:
+          time_granularity: day
+    measures:
+      - name: total_amount
+        expr: amount
+        agg: sum
+
   - name: sales_hierarchy_cw_created
     model: ref('stg_sh_sl_crosswalk')
     description: "Crosswalk for user/date combos (Created Date) => Hierarchy ID"
