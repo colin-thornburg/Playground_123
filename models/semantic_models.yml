@@ -1,18 +1,14 @@
 semantic_models:
   - name: time_test
-    model: ref('test_time_dimension')
+    model: ref('test_time_dimension') # Ensure this model outputs DATE type for transaction_date
     defaults:
       agg_time_dimension: transaction_date
     primary_entity: id
     dimensions:
       - name: transaction_date
         type: time
-        expr: DATE(transaction_date)
         type_params:
           time_granularity: day
-      - name: transaction_date_formatted
-        type: categorical  # or string
-        expr: TO_CHAR(transaction_date, 'YYYY-MM-DD')  # Snowflake date formatting
     measures:
       - name: total_amount
         expr: amount
@@ -25,4 +21,3 @@ metrics:
     type_params:
       measure:
         name: total_amount
-    time_granularity: day
